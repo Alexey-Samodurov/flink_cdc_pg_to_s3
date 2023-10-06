@@ -1,0 +1,11 @@
+flink:
+  outputs:
+    dev:
+      database: default_catalog
+      host: localhost
+      port: 8083
+      schema: default_database
+      session_name: test_session
+      threads: 5
+      type: flink
+  target: dev
