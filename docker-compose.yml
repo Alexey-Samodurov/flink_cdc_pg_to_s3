@@ -1,0 +1,65 @@
+version: "3.7"
+services:
+  postgres:
+    image: postgres:14
+    ports:
+      - "5432:5432"
+    expose:
+      - "5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+#    restart: always
+    command:
+      - "postgres"
+      - "-c"
+      - "wal_level=logical"
+
+  jobmanager:
+    build: .
+    ports:
+      - "8081:8081"
+    command: jobmanager
+#    restart: always
+    depends_on:
+      - postgres
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+
+  taskmanager:
+    build: .
+    depends_on:
+      - jobmanager
+    command: taskmanager
+#    restart: always
+    scale: 1
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 6
+
+  sql-gateway:
+    build: .
+    ports:
+      - "8083:8083"
+    command: bin/sql-gateway.sh start-foreground
+    depends_on:
+      - taskmanager
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        rest.address: jobmanager
+
+  sql-client:
+    build: .
+    command: bin/sql-client.sh
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        rest.address: jobmanager
