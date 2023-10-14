@@ -1,4 +1,30 @@
 version: "3.7"
+
+x-defaults: &defaults
+  env_file:
+    - .env
+  environment: &environment
+    - |
+      FLINK_PROPERTIES=
+      jobmanager.rpc.address: jobmanager
+      sql-gateway.endpoint.rest.address: 0.0.0.0
+      sql-gateway.session.idle-timeout: 1
+      sql-gateway.worker.keepalive-time: 1
+      rest.address: jobmanager
+      taskmanager.numberOfTaskSlots: 64
+      taskmanager.memory.process.size: 30g
+      jobmanager.memory.process.size: 2g
+      execution.checkpointing.interval: 30s
+      execution.checkpointing.mode: EXACTLY_ONCE
+      state.backend: filesystem
+      state.checkpoints.dir: s3a://hudi-meta/checkpoints
+      state.checkpoints.num-retained: 10
+      state.backend.incremental: true
+      s3a.access-key: ${AWS_ACCESS_KEY_ID}
+      s3a.secret-key: ${AWS_SECRET_ACCESS_KEY}
+      s3a.endpoint: ${AWS_ENDPOINT_URL}
+    - JVM_OPTS=-Xmx32g -Xms32g -XX:MaxPermSize=1024m
+
 services:
   postgres:
     image: postgres:14
@@ -10,7 +36,7 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=postgres
-#    restart: always
+    restart: always
     command:
       - "postgres"
       - "-c"
@@ -21,45 +47,36 @@ services:
     ports:
       - "8081:8081"
     command: jobmanager
-#    restart: always
+    restart: always
     depends_on:
       - postgres
     environment:
-      - |
-        FLINK_PROPERTIES=
-        jobmanager.rpc.address: jobmanager
+      *environment
 
   taskmanager:
     build: .
     depends_on:
       - jobmanager
     command: taskmanager
-#    restart: always
-    scale: 1
+    restart: always
+    scale: 2
     environment:
-      - |
-        FLINK_PROPERTIES=
-        jobmanager.rpc.address: jobmanager
-        taskmanager.numberOfTaskSlots: 6
+      *environment
 
   sql-gateway:
     build: .
     ports:
       - "8083:8083"
     command: bin/sql-gateway.sh start-foreground
+    restart: always
     depends_on:
-      - taskmanager
+      - jobmanager
     environment:
-      - |
-        FLINK_PROPERTIES=
-        jobmanager.rpc.address: jobmanager
-        rest.address: jobmanager
+      *environment
 
   sql-client:
     build: .
     command: bin/sql-client.sh
+    profiles: ["dev"]
     environment:
-      - |
-        FLINK_PROPERTIES=
-        jobmanager.rpc.address: jobmanager
-        rest.address: jobmanager
+      *environment
