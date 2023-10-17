@@ -17,7 +17,8 @@ x-defaults: &defaults
       execution.checkpointing.interval: 30s
       execution.checkpointing.mode: EXACTLY_ONCE
       state.backend: filesystem
-      state.checkpoints.dir: s3a://hudi-meta/checkpoints
+      state.checkpoints.dir: s3a://hudi-meta/checkpoint
+      state.savepoints.dir: s3a://hudi-meta/savepoint
       state.checkpoints.num-retained: 10
       state.backend.incremental: true
       s3a.access-key: ${AWS_ACCESS_KEY_ID}
