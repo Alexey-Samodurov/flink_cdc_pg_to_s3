@@ -1,0 +1,39 @@
+version: 2
+
+sources:
+  - name: test
+    tables:
+      - name: CommunicationDispatch
+        config:
+          connector_properties:
+            connector: 'postgres-cdc'
+            hostname: 'postgres'
+            port: '5432'
+            username: 'postgres'
+            password: 'postgres'
+            database-name: 'postgres'
+            schema-name: 'public'
+            slot.name: 'cdc1'
+            decoding.plugin.name: 'pgoutput'
+            table-name: 'CommunicationDispatch'
+        columns:
+          - name: Id
+            data_type: INT PRIMARY KEY NOT ENFORCED
+          - name: MessageId
+            data_type: INT
+          - name: StatusId
+            data_type: INT
+          - name: TestMode
+            data_type: BOOLEAN
+          - name: CreatedById
+            data_type: INT
+          - name: CreatedOn
+            data_type: timestamp
+          - name: ModifiedById
+            data_type: INT
+          - name: ModifiedOn
+            data_type: timestamp
+          - name: ExternalId
+            data_type: STRING
+          - name: SourceTenant
+            data_type: STRING
