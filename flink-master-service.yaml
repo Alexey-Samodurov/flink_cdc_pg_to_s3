@@ -2,10 +2,16 @@ apiVersion: v1
 kind: Service
 metadata:
   name: flink-master
+  annotations:
+    # Тип балансировщика: внутренний.
+    yandex.cloud/load-balancer-type: internal
+    # Идентификатор подсети, в которой необходимо выделить IP-адрес для внутреннего сетевого балансировщика нагрузки.
+    yandex.cloud/subnet-id: e9b01mfn1tqe08ogu5po
 spec:
   ports:
     - port: 8081
-      name: ui
+      targetPort: 8081
+      name: user-interface
     - port: 6123
       name: rpc
     - port: 6124
@@ -15,3 +21,4 @@ spec:
   selector:
     app: flink
     component: master
+  type: LoadBalancer
