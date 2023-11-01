@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flink-rest
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flink
+      component: rest
+  template:
+    metadata:
+      labels:
+        app: flink
+        component: rest
+    spec:
+      containers:
+        - name: rest
+          image: flink:1.17-scala_2.12-java11
+          command: ["bin/sql-gateway.sh", "start-foreground"]
+          ports:
+              - containerPort: 8083
+                name: rest
+              - containerPort: 8081
+                name: ui
+              - containerPort: 6123
+                name: rpc
+              - containerPort: 6124
+                name: blob
+              - containerPort: 6125
+                name: query
+          volumeMounts:
+            - name: flink-config-volume
+              mountPath: /opt/flink/conf
+      volumes:
+        - name: flink-config-volume
+          configMap:
+            name: flink-config
+            items:
+              - key: flink-conf.yaml
+                path: flink-conf.yaml
+              - key: log4j-console.properties
+                path: log4j-console.properties
+                
