@@ -27,5 +27,17 @@ spec:
               - containerPort: 6125
                 name: query
           env:
-            - name: JOB_MANAGER_RPC_ADDRESS
-              value: flink-master
+#            - name: JOB_MANAGER_RPC_ADDRESS
+#              value: flink-master
+            - name: FLINK_PROPERTIES
+              value: |
+                jobmanager.rpc.address: flink-master
+                sql-gateway.endpoint.rest.address: 0.0.0.0
+                sql-gateway.session.idle-timeout: 1
+                sql-gateway.worker.keepalive-time: 1
+                rest.address: flink-master
+                taskmanager.numberOfTaskSlots: 20
+                taskmanager.memory.process.size: 4g
+                jobmanager.memory.process.size: 2g
+                execution.checkpointing.interval: 30s
+                execution.checkpointing.mode: EXACTLY_ONCE
