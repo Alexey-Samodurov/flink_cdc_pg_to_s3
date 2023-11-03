@@ -21,4 +21,5 @@ spec:
   selector:
     app: flink
     component: master
+  loadBalancerIP: 172.27.15.18
   type: LoadBalancer
